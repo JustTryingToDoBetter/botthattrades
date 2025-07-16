@@ -16,7 +16,8 @@ from alembic import op
 import sqlalchemy as sa
 from datetime import timedelta
 
-def check_time_interval(st, et, im):
+'''
+def chunk_time_interval(st, et, im):
     chunks = []
     curr_time = st
     while curr_time <= et:
@@ -24,13 +25,16 @@ def check_time_interval(st, et, im):
         chunks.append((curr_time, min(nxt_time, et)))
         curr_time = nxt_time
     return chunks
+    
+'''
+
 
 ##create a table
 def upgrade():
     op.create_table(
         'market_data',
-        sa.Column('id', sa.BigInteger, primary_key=True, autoincrement=True),
-        sa.Column('timestamp_utc', sa.TIMESTAMP(timezone=True), nullable=False),
+        sa.Column('id', sa.BigInteger,  autoincrement=True),
+        sa.Column('timestamp_utc', sa.TIMESTAMP(timezone=True), primary_key=True),
         sa.Column('symbol', sa.Text, nullable=False), 
         sa.Column('open', sa.Float, nullable=False),
         sa.Column('high', sa.Float, nullable=False),
@@ -42,8 +46,14 @@ def upgrade():
     )
     ## hypertable
     op.execute(
-        "SELECT create_hypertable('market_data', 'timestamp_utc', chunk_time_interval(5,10,1))"
-    )
+    "SELECT create_hypertable("
+    "  'market_data', "
+    "  'timestamp_utc', "
+    "  chunk_time_interval => INTERVAL '1 day', "
+    "  if_not_exists => TRUE"
+    ");"
+)
+
 
 def downgrade():
     op.execute("SELECT drop_hypertable('market_data', if_exists => TRUE)")
