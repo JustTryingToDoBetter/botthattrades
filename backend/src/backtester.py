@@ -7,7 +7,7 @@ def basic_strategy(df):
     ## buy if close > prev_close, else flat
     df = df.copy()
 
-    df["signal"] = (df["close"] > df["close"].shift(1).astype(int))
+    df["signal"] = (df["close"].diff() > 0).astype(int)
     df["signal"].iloc[0] = 0
     return df
 
@@ -29,10 +29,10 @@ def compute_performance(df):
     df["equity"] = (1 + df["pnl"]).cumprod()
 
     return {
-        "final equtiuy": df["equity"].iloc[-1],
+        "final_equity": df["equity"].iloc[-1],
         "return_pct": (df["equity"].iloc[-1] -1)*100,
         "max_drawdown": (df["equity"].cummax() - df["equity"]).max(),
         "sharpe": df["pnl"].mean() / (df["pnl"].std() + 1e-8) * np.sqrt(252),
-        "trades": int(df["signal"].sum()),
+        "trades": int(df["signal"].fillna(0).sum()),
     }, df
 
