@@ -34,7 +34,7 @@ def fetch_ohlcv(symbol="BTCUSDT", interval="1d", start=None, end=None, limit=100
     
     for col in ["open", "high", "low", "close", "volume"]:
         df[col] = pd.to_numeric(df[col], errors='coerce') # Convert price and volume columns to numeric
-    df = df[["open_time", "open", "high", "low", "close", "volume"]]  # Keep only relevant columns
+    df = df[["open_time", "open", "high", "low", "close", "volume", "close_time"]]  # Keep only relevant columns
 
     return df
 
