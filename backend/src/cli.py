@@ -2,6 +2,7 @@ import click
 import pandas as pd
 from sqlalchemy import text
 from .db import engine
+from .backtester import basic_strategy, apply_slippage_and_commission, compute_performance
 
 ##creates a new group
 @click.group()
@@ -26,15 +27,17 @@ def backtest(symbol, start, end, export):
 
     with engine.connect() as conn:
         df = pd.read_sql(query, conn, params={"symbol": symbol, "start": start, "end": end})
-    df["returns"] = df["close"].pct_change().fillna(0)
-    df["equity"] = (1 + df['returns']).cumprod()
+    
+    df = basic_strategy(df)
+    df = apply_slippage_and_commission(df)
+    metrics, df = compute_performance(df)
     filename = f"{symbol}_{start}_{end}_backtest.{export}"
     if export == 'csv':
         df.to_csv(filename, index=False)
     else:
-        df.to_json(filename, orient="records")
+        df.to_json(filename, orient='records', date_format='iso')
     
-    click.echo(filename)
+    click.echo(f"{filename}\nPerformance: {metrics}")
 
 if __name__ == "__main__":
     tb()
