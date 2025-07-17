@@ -21,7 +21,7 @@ def apply_slippage_and_commission(df, slippage_bps=5,commission_bps=2):
     ##assume buy on open of signal bar, sell on open of next
     df["fill_price"] = df["close"] + np.where(df["signal"] > 0, slippage, 0) + commission
     return df
-
+##pct_chnage computes the percentage change in price 
 def compute_performance(df):
     df = df.copy()
     df["position"] = df["signal"].shift(1).fillna(0) ## enter next bar
